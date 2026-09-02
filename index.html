@@ -1,14 +1,14 @@
-
 <!DOCTYPE html>
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice System - Modern Invoice Standard</title>
-    <!-- Tailwind CSS (Required for Advertisement Banner Section) -->
+    <title></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
 
@@ -21,11 +21,6 @@
             background-color: #f8fafc;
             font-family: 'Hind Siliguri', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #334155;
-        }
-
-        .navbar-brand {
-            font-weight: 700;
-            color: var(--primary-color) !important;
         }
 
         .card {
@@ -63,6 +58,8 @@
             border-radius: 12px;
             margin: 0 auto;
             border: 1px solid #e2e8f0;
+            box-sizing: border-box;
+            width: 100%;
         }
 
         .invoice-title {
@@ -112,7 +109,6 @@
             margin: 15px 0;
         }
 
-        /* Signature Section Styling */
         .signature-section {
             margin-top: 40px;
             display: flex;
@@ -129,25 +125,41 @@
             padding-top: 5px;
         }
 
-        /* Thermal Preview Specific Styles */
-        .preview-58mm {
-            max-width: 340px !important;
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px auto;
         }
 
-            .preview-58mm .invoice-box {
-                width: 58mm;
-                padding: 12px;
-                font-size: 11px;
+            #qrcode img {
+                display: block;
+                margin: 0 auto;
+            }
+
+        /* Thermal & Paper Preview Specific Styles */
+        .preview-48mm {
+            max-width: 280px !important;
+        }
+
+            .preview-48mm .invoice-box {
+                width: 100% !important;
+                max-width: 48mm;
+                padding: 4px;
+                font-size: 10px !important;
                 border-radius: 0;
             }
 
-            .preview-58mm .signature-section {
-                margin-top: 20px;
-            }
+        .preview-58mm {
+            max-width: 320px !important;
+        }
 
-            .preview-58mm .signature-box {
-                width: 100px;
-                font-size: 9px;
+            .preview-58mm .invoice-box {
+                width: 100% !important;
+                max-width: 58mm;
+                padding: 6px;
+                font-size: 11px !important;
+                border-radius: 0;
             }
 
         .preview-80mm {
@@ -155,19 +167,11 @@
         }
 
             .preview-80mm .invoice-box {
-                width: 80mm;
-                padding: 16px;
+                width: 100% !important;
+                max-width: 80mm;
+                padding: 10px;
                 font-size: 12px;
                 border-radius: 0;
-            }
-
-            .preview-80mm .signature-section {
-                margin-top: 25px;
-            }
-
-            .preview-80mm .signature-box {
-                width: 120px;
-                font-size: 10px;
             }
 
         .preview-a6 {
@@ -179,27 +183,69 @@
                 font-size: 13px;
             }
 
-        /* Thermal Layout Adjustments */
+        .preview-a4 {
+            max-width: 850px !important;
+        }
+
+            .preview-a4 .invoice-box {
+                padding: 35px;
+                font-size: 14px;
+            }
+
         .thermal-mode .invoice-header {
-            flex-direction: column;
+            flex-direction: column !important;
             text-align: center !important;
         }
 
-            .thermal-mode .invoice-header div {
+            .thermal-mode .invoice-header > div {
+                width: 100% !important;
                 text-align: center !important;
-                width: 100%;
+            }
+
+            .thermal-mode .invoice-header .text-end {
+                text-align: center !important;
+                margin-top: 6px !important;
             }
 
         .thermal-mode .table-invoice th,
         .thermal-mode .table-invoice td {
-            padding: 4px 2px !important;
+            font-size: inherit !important;
+            padding: 3px 2px !important;
         }
 
         .thermal-mode .summary-col {
             width: 100% !important;
         }
 
-        /* Paper Sizes for Printing */
+        .thermal-mode .summary-box {
+            padding: 6px 8px !important;
+        }
+
+            .thermal-mode .summary-box td {
+                font-size: inherit !important;
+                padding: 2px !important;
+            }
+
+        .thermal-mode .signature-section,
+        .thermal-mode .phone-number-field,
+        .thermal-mode .customer-info-section {
+            display: none !important;
+        }
+
+        .thermal-mode .invoice-footer {
+            margin-top: 6px !important;
+            padding-top: 4px !important;
+        }
+
+            .thermal-mode .invoice-footer p {
+                margin-bottom: 2px !important;
+                font-size: 0.8rem !important;
+            }
+
+        .thermal-mode .thermal-dashed {
+            margin: 8px 0 !important;
+        }
+
         @media print {
             body * {
                 visibility: hidden;
@@ -226,27 +272,6 @@
                 padding: 0 !important;
                 box-shadow: none !important;
                 border: none !important;
-            }
-
-            /* Paper Page Sizes */
-            body.print-58mm @page {
-                size: 58mm auto;
-                margin: 2mm;
-            }
-
-            body.print-80mm @page {
-                size: 80mm auto;
-                margin: 3mm;
-            }
-
-            body.print-a5 @page {
-                size: A5 portrait;
-                margin: 8mm;
-            }
-
-            body.print-a6 @page {
-                size: A6 portrait;
-                margin: 5mm;
             }
         }
 
@@ -285,8 +310,6 @@
                 </div>
             </div>
         </section>
-        <br />
-        <!-- App Header -->
         <header class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
             <h3 class="fw-bold text-dark m-0"><i class="fa-solid fa-calculator me-2 text-success"></i>Invoice System</h3>
             <span class="badge bg-dark px-3 py-2 fs-6">Built by Altra Solve</span>
@@ -294,8 +317,37 @@
 
         <form id="posForm" onsubmit="return false;">
             <div class="row g-4">
-                <!-- Left Column: Business & Customer Info -->
-                <div class="col-lg-4">
+
+                <div class="col-lg-8 order-1 order-lg-1">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span><i class="fa-solid fa-cart-plus me-2"></i> প্রোডাক্ট যুক্ত করুন</span>
+                            <button type="button" class="btn btn-sm btn-outline-success" onclick="addProductRow()">
+                                <i class="fa-solid fa-plus me-1"></i> নতুন আইটেম
+                            </button>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0" id="productTable">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 25%;">প্রোডাক্ট নাম</th>
+                                            <th style="width: 18%;">পরিমাণ</th>
+                                            <th style="width: 15%;">একক (Unit)</th>
+                                            <th style="width: 15%;">সংখ্যা (Qty)</th>
+                                            <th style="width: 15%;">একক মূল্য</th>
+                                            <th style="width: 12%;">মোট</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="productTbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 order-2 order-lg-2">
                     <div class="card mb-4">
                         <div class="card-header text-primary">
                             <i class="fa-solid fa-store me-2"></i> প্রতিষ্ঠান ও ক্রেতার তথ্য
@@ -306,13 +358,21 @@
                                 <input type="text" id="shopName" class="form-control" placeholder="প্রতিষ্ঠানের নাম" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">ঠিকানা ও মোবাইল</label>
-                                <input type="text" id="shopAddress" class="form-control" placeholder="০১৭XXXXXXXX">
+                                <label class="form-label">প্রতিষ্ঠানের ঠিকানা</label>
+                                <input type="text" id="shopAddress" class="form-control" placeholder="ঠিকানা">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">প্রতিষ্ঠানের মোবাইল</label>
+                                <input type="text" id="shopPhone" class="form-control" placeholder="০১৭XXXXXXXX">
                             </div>
                             <hr>
                             <div class="mb-3">
                                 <label class="form-label fw-bold">ক্রেতার নাম</label>
                                 <input type="text" id="customerName" class="form-control" placeholder="ক্রেতার নাম">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">ক্রেতার ঠিকানা (ঐচ্ছিক)</label>
+                                <input type="text" id="customerAddress" class="form-control" placeholder="ক্রেতার ঠিকানা">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">ক্রেতার মোবাইল (ঐচ্ছিক)</label>
@@ -321,7 +381,6 @@
                         </div>
                     </div>
 
-                    <!-- Payment Summary -->
                     <div class="card">
                         <div class="card-header text-success">
                             <i class="fa-solid fa-receipt me-2"></i> হিসাব বিবরণী
@@ -366,37 +425,6 @@
                     </div>
                 </div>
 
-                <!-- Right Column: Products Add Section -->
-                <div class="col-lg-8">
-                    <div class="card mb-4">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <span><i class="fa-solid fa-cart-plus me-2"></i> প্রোডাক্ট যুক্ত করুন</span>
-                            <button type="button" class="btn btn-sm btn-outline-success" onclick="addProductRow()">
-                                <i class="fa-solid fa-plus me-1"></i> নতুন আইটেম
-                            </button>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0" id="productTable">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th style="width: 25%;">প্রোডাক্ট নাম</th>
-                                            <th style="width: 18%;">পরিমাণ</th>
-                                            <th style="width: 15%;">একক (Unit)</th>
-                                            <th style="width: 15%;">সংখ্যা (Qty)</th>
-                                            <th style="width: 15%;">একক মূল্য</th>
-                                            <th style="width: 12%;">মোট</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="productTbody">
-                                        <!-- Product rows dynamically inserted here -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </form>
 
@@ -405,34 +433,45 @@
         </footer>
     </div>
 
-    <!-- Invoice Modal -->
     <div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg" id="modalDialog">
+        <div class="modal-dialog modal-lg preview-a4" id="modalDialog">
             <div class="modal-content">
-                <div class="modal-header no-print">
-                    <h5 class="modal-title"><i class="fa-solid fa-print me-2"></i>প্রিন্ট প্রিভিউ</h5>
-                    <div class="d-flex align-items-center gap-2">
-                        <label class="small fw-bold">সাইজ:</label>
-                        <select id="paperSize" class="form-select form-select-sm" style="width: 170px;" onchange="updatePaperPreview()">
-                            <option value="80mm" selected>80mm Thermal (Standard)</option>
-                            <option value="58mm">58mm Thermal (Mini)</option>
-                            <option value="a5">A5 Paper Page</option>
-                            <option value="a6">A6 Paper Page</option>
+                <div class="modal-header no-print flex-column align-items-stretch gap-2 bg-light py-2">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <h5 class="modal-title m-0"><i class="fa-solid fa-print me-2"></i>প্রিন্ট প্রিভিউ</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap pt-1 border-top w-100">
+                        <label class="small fw-bold mb-0">সাইজ:</label>
+                        <select id="paperSize" class="form-select form-select-sm" style="width: 150px;" onchange="updatePaperPreview()">
+                            <option value="a4" selected>A4 Page</option>
+                            <option value="a5">A5 Page</option>
+                            <option value="a6">A6 Page</option>
+                            <option value="80mm">80mm Thermal</option>
+                            <option value="58mm">58mm Thermal</option>
+                            <option value="48mm">48mm Thermal</option>
                         </select>
-                        <button type="button" class="btn btn-success btn-sm ms-2" onclick="printInvoice()">
-                            <i class="fa-solid fa-print me-1"></i> প্রিন্ট
-                        </button>
-                        <button type="button" class="btn-close ms-2" data-bs-dismiss="modal"></button>
+                        <div class="ms-auto d-flex gap-2">
+                            <button type="button" class="btn btn-primary btn-sm" id="btnPdfDownload" onclick="downloadPDF()">
+                                <i class="fa-solid fa-file-pdf me-1"></i> PDF
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm" onclick="printInvoice()">
+                                <i class="fa-solid fa-print me-1"></i> প্রিন্ট
+                            </button>
+                        </div>
                     </div>
                 </div>
+
                 <div class="modal-body" id="invoiceArea">
                     <div class="invoice-box" id="invoiceBox">
-                        <!-- Header -->
-                        <div class="invoice-header d-flex justify-content-between align-items-start pb-3 border-bottom">
+                        <div class="invoice-header d-flex justify-content-between align-items-start pb-2 border-bottom">
                             <div>
                                 <h3 class="invoice-title m-0" id="invShopName">Shop Name</h3>
                                 <p class="text-muted small m-0 mt-1" id="invShopAddress">
                                     <i class="fa-solid fa-location-dot me-1 text-danger"></i>Address
+                                </p>
+                                <p class="text-muted small m-0 phone-number-field" id="invShopPhone">
+                                    <i class="fa-solid fa-phone me-1 text-success"></i>Phone
                                 </p>
                             </div>
                             <div class="text-end mt-2 mt-sm-0">
@@ -442,38 +481,24 @@
                             </div>
                         </div>
 
-                        <!-- Customer Info -->
-                        <div class="row my-3 align-items-center">
-                            <div class="col-8">
+                        <div class="row my-2 align-items-center customer-info-section">
+                            <div class="col-12">
                                 <div class="small text-uppercase text-muted fw-bold">ক্রেতার বিবরণ:</div>
                                 <div class="fw-bold text-dark" id="invCustomerName">Customer Name</div>
-                                <div class="small text-muted" id="invCustomerPhone"></div>
-                            </div>
-                            <div class="col-4 text-end">
-                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.75rem;">পরিশোধিত</span>
+                                <div class="small text-muted" id="invCustomerAddress"></div>
+                                <div class="small text-muted phone-number-field" id="invCustomerPhone"></div>
                             </div>
                         </div>
 
-                        <!-- Table -->
                         <div class="table-responsive">
                             <table class="table table-invoice align-middle mb-2">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 5%;">#</th>
-                                        <th style="width: 45%;">বিবরণ</th>
-                                        <th class="text-center" style="width: 15%;">পরিমাণ</th>
-                                        <th class="text-center" style="width: 10%;">সংখ্যা</th>
-                                        <th class="text-end" style="width: 12%;">দর</th>
-                                        <th class="text-end" style="width: 13%;">মোট</th>
-                                    </tr>
-                                </thead>
+                                <thead id="invTableHeader"></thead>
                                 <tbody id="invTableBody"></tbody>
                             </table>
                         </div>
 
                         <div class="thermal-dashed"></div>
 
-                        <!-- Summary -->
                         <div class="row justify-content-end">
                             <div class="col-12 col-md-6 summary-col">
                                 <div class="summary-box">
@@ -491,8 +516,8 @@
                                             <td class="text-end text-muted" id="invTax">+0.00 TK</td>
                                         </tr>
                                         <tr class="border-top">
-                                            <td class="fw-bold text-dark fs-6 pt-2">সর্বমোট:</td>
-                                            <td class="text-end fw-bold text-primary fs-6 pt-2" id="invGrandTotal">0.00 TK</td>
+                                            <td class="fw-bold text-dark fs-6 pt-1">সর্বমোট:</td>
+                                            <td class="text-end fw-bold text-primary fs-6 pt-1" id="invGrandTotal">0.00 TK</td>
                                         </tr>
                                         <tr>
                                             <td class="text-secondary">পরিশোধিত:</td>
@@ -507,23 +532,15 @@
                             </div>
                         </div>
 
-                        <!-- Signature Section -->
                         <div class="signature-section">
-                            <div class="signature-box">
-                                ক্রেতার স্বাক্ষর
-                            </div>
-                            <div class="signature-box">
-                                বিক্রেতার স্বাক্ষর
-                            </div>
+                            <div class="signature-box">ক্রেতার স্বাক্ষর</div>
+                            <div class="signature-box">বিক্রেতার স্বাক্ষর</div>
                         </div>
 
-                        <!-- Footer -->
-                        <div class="mt-4 pt-3 border-top text-center">
-                            <p class="small text-muted mb-2">আমাদের সাথে কেনাকাটা করার জন্য ধন্যবাদ!</p>
-                            <div class="d-flex justify-content-center align-items-center gap-2">
-                                <i class="fa-solid fa-qrcode fs-3 text-secondary"></i>
-                            </div>
-                            <small class="text-muted d-block mt-2" style="font-size: 0.7rem;">Software Solution by <strong>Altra Solve</strong></small>
+                        <div class="mt-3 pt-2 border-top text-center invoice-footer">
+                            <p class="small text-muted mb-1">ধন্যবাদ!</p>
+                            <div id="qrcode"></div>
+                            <small class="text-muted d-block mt-1" style="font-size: 0.65rem;">Solution by <strong>Altra Solve</strong></small>
                         </div>
                     </div>
                 </div>
@@ -531,7 +548,6 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS & App Logic -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let rowCount = 0;
@@ -546,35 +562,25 @@
             const tr = document.createElement('tr');
             tr.id = `row-${rowCount}`;
             tr.innerHTML = `
-                            <td>
-                                <input type="text" class="form-control form-control-sm prod-name" placeholder="প্রোডাক্ট নাম" required>
-                            </td>
-                            <td>
-                                <input type="number" class="form-control form-control-sm prod-weight" value="1" min="0" step="any" oninput="calculateRow(${rowCount})">
-                            </td>
-                            <td>
-                                <select class="form-select form-select-sm prod-unit" onchange="calculateRow(${rowCount})">
-                                    <option value="Kg">Kg</option>
-                                    <option value="Gram">Gram</option>
-                                    <option value="Pcs">Pcs</option>
-                                    <option value="Litre">Litre</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="number" class="form-control form-control-sm prod-qty" value="1" min="1" oninput="calculateRow(${rowCount})">
-                            </td>
-                            <td>
-                                <input type="number" class="form-control form-control-sm prod-price" value="0" min="0" step="any" oninput="calculateRow(${rowCount})">
-                            </td>
-                            <td class="fw-bold text-end pe-3">
-                                <span class="row-total">0.00</span>
-                            </td>
-                            <td class="text-center">
-                                <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeRow(${rowCount})">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </td>
-                        `;
+                        <td><input type="text" class="form-control form-control-sm prod-name" placeholder="প্রোডাক্ট নাম" required></td>
+                        <td><input type="number" class="form-control form-control-sm prod-weight" value="1" min="0" step="any" oninput="calculateRow(${rowCount})"></td>
+                        <td>
+                            <select class="form-select form-select-sm prod-unit" onchange="calculateRow(${rowCount})">
+                                <option value="Kg">Kg</option>
+                                <option value="Gram">Gram</option>
+                                <option value="Pcs">Pcs</option>
+                                <option value="Litre">Litre</option>
+                            </select>
+                        </td>
+                        <td><input type="number" class="form-control form-control-sm prod-qty" value="1" min="1" oninput="calculateRow(${rowCount})"></td>
+                        <td><input type="number" class="form-control form-control-sm prod-price" value="0" min="0" step="any" oninput="calculateRow(${rowCount})"></td>
+                        <td class="fw-bold text-end pe-3"><span class="row-total">0.00</span></td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeRow(${rowCount})">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
             tbody.appendChild(tr);
         }
 
@@ -590,26 +596,16 @@
 
         function calculateRow(id) {
             const row = document.getElementById(`row-${id}`);
-            const weight = parseFloat(row.querySelector('.prod-weight').value) || 0;
-            const unit = row.querySelector('.prod-unit').value;
             const qty = parseFloat(row.querySelector('.prod-qty').value) || 0;
             const price = parseFloat(row.querySelector('.prod-price').value) || 0;
-
-            let rowTotal = 0;
-            if (unit === 'Gram') {
-                rowTotal = (weight / weight) * price * qty;
-            } else {
-                rowTotal = weight * price * qty;
-            }
-
+            let rowTotal = price * qty;
             row.querySelector('.row-total').innerText = rowTotal.toFixed(2);
             calculateTotal();
         }
 
         function calculateTotal() {
             let subtotal = 0;
-            const rowTotals = document.querySelectorAll('.row-total');
-            rowTotals.forEach(span => {
+            document.querySelectorAll('.row-total').forEach(span => {
                 subtotal += parseFloat(span.innerText) || 0;
             });
 
@@ -618,13 +614,7 @@
             const taxPercent = parseFloat(document.getElementById('taxPercent').value) || 0;
             const paidAmount = parseFloat(document.getElementById('paidAmount').value) || 0;
 
-            let discountAmount = 0;
-            if (discountType === 'percent') {
-                discountAmount = (subtotal * discountVal) / 100;
-            } else {
-                discountAmount = discountVal;
-            }
-
+            let discountAmount = (discountType === 'percent') ? (subtotal * discountVal) / 100 : discountVal;
             const afterDiscount = subtotal - discountAmount;
             const taxAmount = (afterDiscount * taxPercent) / 100;
             const grandTotal = Math.max(0, afterDiscount + taxAmount);
@@ -645,31 +635,141 @@
                 return;
             }
 
-            const calc = calculateTotal();
-
             document.getElementById('invShopName').innerText = shopName;
-            document.getElementById('invShopAddress').innerText = document.getElementById('shopAddress').value || "ঠিকানা দেওয়া হয়নি";
-            document.getElementById('invCustomerName').innerText = document.getElementById('customerName').value || "সাধারণ ক্রেতা";
-            document.getElementById('invCustomerPhone').innerText = document.getElementById('customerPhone').value ? "মোবাইল: " + document.getElementById('customerPhone').value : "";
-            document.getElementById('invNumber').innerText = "#INV-" + Math.floor(1000 + Math.random() * 9000);
-            document.getElementById('invDate').innerText = new Date().toLocaleDateString('bn-BD');
+            const shopAddress = document.getElementById('shopAddress').value;
+            const shopPhone = document.getElementById('shopPhone').value;
 
+            document.getElementById('invShopAddress').style.display = shopAddress ? 'block' : 'none';
+            document.getElementById('invShopAddress').innerHTML = `<i class="fa-solid fa-location-dot me-1 text-danger"></i>${shopAddress}`;
+
+            document.getElementById('invShopPhone').style.display = shopPhone ? 'block' : 'none';
+            document.getElementById('invShopPhone').innerHTML = `<i class="fa-solid fa-phone me-1 text-success"></i>${shopPhone}`;
+
+            document.getElementById('invCustomerName').innerText = document.getElementById('customerName').value || "সাধারণ ক্রেতা";
+
+            const customerAddress = document.getElementById('customerAddress').value;
+            const invCustomerAddressElem = document.getElementById('invCustomerAddress');
+            if (customerAddress) {
+                invCustomerAddressElem.style.display = 'block';
+                invCustomerAddressElem.innerText = "ঠিকানা: " + customerAddress;
+            } else {
+                invCustomerAddressElem.style.display = 'none';
+            }
+
+            document.getElementById('invCustomerPhone').innerText = document.getElementById('customerPhone').value ? "মোবাইল: " + document.getElementById('customerPhone').value : "";
+
+            const prefix = shopName.replace(/\s+/g, '').substring(0, 3).toUpperCase();
+            const now = new Date();
+            const timeStamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+            const invNumberStr = `#${prefix}-${timeStamp}`;
+
+            document.getElementById('invNumber').innerText = invNumberStr;
+            document.getElementById('invDate').innerText = now.toLocaleDateString('bn-BD');
+
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: invNumberStr,
+                width: 100,
+                height: 100,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // Reset paper size dropdown to A4 on every new generation
+            document.getElementById('paperSize').value = 'a4';
+            updatePaperPreview();
+
+            new bootstrap.Modal(document.getElementById('invoiceModal')).show();
+        }
+
+        function updatePaperPreview() {
+            const paperSize = document.getElementById('paperSize').value;
+            const modalDialog = document.getElementById('modalDialog');
+            const invoiceBox = document.getElementById('invoiceBox');
+            const pdfBtn = document.getElementById('btnPdfDownload');
+
+            // Show PDF download button ONLY when 'a4' is selected
+            const isA4 = (paperSize === 'a4');
+            pdfBtn.style.display = isA4 ? 'inline-block' : 'none';
+
+            const isThermal = (paperSize === '48mm' || paperSize === '58mm' || paperSize === '80mm');
+
+            modalDialog.classList.remove('preview-48mm', 'preview-58mm', 'preview-80mm', 'preview-a6', 'preview-a4');
+            invoiceBox.classList.remove('thermal-mode');
+
+            if (paperSize === '48mm') { modalDialog.classList.add('preview-48mm'); invoiceBox.classList.add('thermal-mode'); }
+            else if (paperSize === '58mm') { modalDialog.classList.add('preview-58mm'); invoiceBox.classList.add('thermal-mode'); }
+            else if (paperSize === '80mm') { modalDialog.classList.add('preview-80mm'); invoiceBox.classList.add('thermal-mode'); }
+            else if (paperSize === 'a6') { modalDialog.classList.add('preview-a6'); }
+            else if (paperSize === 'a4') { modalDialog.classList.add('preview-a4'); }
+
+            renderInvoiceTable(isThermal);
+
+            const calc = calculateTotal();
+            document.getElementById('invSubtotal').innerText = calc.subtotal.toFixed(2) + " TK";
+            document.getElementById('invDiscount').innerText = "-" + calc.discountAmount.toFixed(2) + " TK";
+            document.getElementById('invTax').innerText = "+" + calc.taxAmount.toFixed(2) + " TK";
+            document.getElementById('invGrandTotal').innerText = calc.grandTotal.toFixed(2) + " TK";
+            document.getElementById('invPaid').innerText = calc.paidAmount.toFixed(2) + " TK";
+            document.getElementById('invDue').innerText = calc.dueAmount.toFixed(2) + " TK";
+        }
+
+        function renderInvoiceTable(isThermal) {
+            const invThead = document.getElementById('invTableHeader');
             const invTbody = document.getElementById('invTableBody');
             invTbody.innerHTML = '';
-
             const rows = document.querySelectorAll('#productTbody tr');
-            let index = 1;
 
-            rows.forEach(row => {
-                const name = row.querySelector('.prod-name').value || "Item " + index;
-                const weight = row.querySelector('.prod-weight').value;
-                const unit = row.querySelector('.prod-unit').value;
-                const qty = row.querySelector('.prod-qty').value;
-                const price = parseFloat(row.querySelector('.prod-price').value) || 0;
-                const total = parseFloat(row.querySelector('.row-total').innerText) || 0;
+            if (isThermal) {
+                invThead.innerHTML = `
+                            <tr>
+                                <th style="width: 50%;">বিবরণ</th>
+                                <th class="text-center" style="width: 20%;">Qty</th>
+                                <th class="text-end" style="width: 30%;">মোট</th>
+                            </tr>
+                        `;
+                rows.forEach((row, idx) => {
+                    const name = row.querySelector('.prod-name').value || "Item " + (idx + 1);
+                    const weight = row.querySelector('.prod-weight').value;
+                    const unit = row.querySelector('.prod-unit').value;
+                    const qty = row.querySelector('.prod-qty').value;
+                    const total = parseFloat(row.querySelector('.row-total').innerText) || 0;
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                                <td>
+                                    <div class="fw-bold">${name}</div>
+                                    <div class="text-muted" style="font-size: 0.8em;">${weight} ${unit}</div>
+                                </td>
+                                <td class="text-center fw-bold align-middle">${qty}</td>
+                                <td class="text-end fw-bold align-middle">${total.toFixed(2)}</td>
+                            `;
+                    invTbody.appendChild(tr);
+                });
+            } else {
+                invThead.innerHTML = `
+                            <tr>
+                                <th style="width: 5%;">#</th>
+                                <th style="width: 40%;">বিবরণ</th>
+                                <th class="text-center" style="width: 20%;">পরিমাণ</th>
+                                <th class="text-center" style="width: 10%;">সংখ্যা</th>
+                                <th class="text-end" style="width: 12%;">দর</th>
+                                <th class="text-end" style="width: 13%;">মোট</th>
+                            </tr>
+                        `;
+                let index = 1;
+                rows.forEach(row => {
+                    const name = row.querySelector('.prod-name').value || "Item " + index;
+                    const weight = row.querySelector('.prod-weight').value;
+                    const unit = row.querySelector('.prod-unit').value;
+                    const qty = row.querySelector('.prod-qty').value;
+                    const price = parseFloat(row.querySelector('.prod-price').value) || 0;
+                    const total = parseFloat(row.querySelector('.row-total').innerText) || 0;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
                                 <td>${index++}</td>
                                 <td><div class="fw-bold">${name}</div></td>
                                 <td class="text-center">${weight} ${unit}</td>
@@ -677,46 +777,46 @@
                                 <td class="text-end">${price.toFixed(2)}</td>
                                 <td class="text-end fw-bold">${total.toFixed(2)}</td>
                             `;
-                invTbody.appendChild(tr);
-            });
-
-            document.getElementById('invSubtotal').innerText = calc.subtotal.toFixed(2) + " TK";
-            document.getElementById('invDiscount').innerText = "-" + calc.discountAmount.toFixed(2) + " TK";
-            document.getElementById('invTax').innerText = "+" + calc.taxAmount.toFixed(2) + " TK";
-            document.getElementById('invGrandTotal').innerText = calc.grandTotal.toFixed(2) + " TK";
-            document.getElementById('invPaid').innerText = calc.paidAmount.toFixed(2) + " TK";
-            document.getElementById('invDue').innerText = calc.dueAmount.toFixed(2) + " TK";
-
-            updatePaperPreview();
-
-            const modal = new bootstrap.Modal(document.getElementById('invoiceModal'));
-            modal.show();
-        }
-
-        function updatePaperPreview() {
-            const paperSize = document.getElementById('paperSize').value;
-            const modalDialog = document.getElementById('modalDialog');
-            const invoiceBox = document.getElementById('invoiceBox');
-
-            modalDialog.classList.remove('preview-58mm', 'preview-80mm', 'preview-a6');
-            invoiceBox.classList.remove('thermal-mode');
-
-            if (paperSize === '58mm') {
-                modalDialog.classList.add('preview-58mm');
-                invoiceBox.classList.add('thermal-mode');
-            } else if (paperSize === '80mm') {
-                modalDialog.classList.add('preview-80mm');
-                invoiceBox.classList.add('thermal-mode');
-            } else if (paperSize === 'a6') {
-                modalDialog.classList.add('preview-a6');
+                    invTbody.appendChild(tr);
+                });
             }
         }
 
         function printInvoice() {
-            const paperSize = document.getElementById('paperSize.value') || document.getElementById('paperSize').value;
+            const paperSize = document.getElementById('paperSize').value;
             document.body.className = 'py-4';
             document.body.classList.add(`print-${paperSize}`);
             window.print();
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('invoiceBox');
+            const paperSize = document.getElementById('paperSize').value;
+            const invNumber = document.getElementById('invNumber').innerText.replace('#', '');
+            const clone = element.cloneNode(true);
+
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.top = '-9999px';
+            tempDiv.style.width = '210mm';
+
+            tempDiv.appendChild(clone);
+            document.body.appendChild(tempDiv);
+
+            const opt = {
+                margin: 1,
+                filename: `Invoice_${invNumber}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, scrollX: 0, scrollY: 0 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(clone).save().then(() => {
+                document.body.removeChild(tempDiv);
+            }).catch(() => {
+                if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+            });
         }
     </script>
 </body>
