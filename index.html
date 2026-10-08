@@ -355,15 +355,15 @@
                         <div class="card-body">
                             <div class="mb-3">
                                 <label class="form-label fw-bold">প্রতিষ্ঠানের নাম</label>
-                                <input type="text" id="shopName" class="form-control" placeholder="প্রতিষ্ঠানের নাম" required>
+                                <input type="text" id="shopName" class="form-control" placeholder="প্রতিষ্ঠানের নাম" oninput="saveShopInfo()" required>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">প্রতিষ্ঠানের ঠিকানা</label>
-                                <input type="text" id="shopAddress" class="form-control" placeholder="ঠিকানা">
+                                <input type="text" id="shopAddress" class="form-control" placeholder="ঠিকানা" oninput="saveShopInfo()">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">প্রতিষ্ঠানের মোবাইল</label>
-                                <input type="text" id="shopPhone" class="form-control" placeholder="০১৭XXXXXXXX">
+                                <input type="text" id="shopPhone" class="form-control" placeholder="০১৭XXXXXXXX" oninput="saveShopInfo()">
                             </div>
                             <hr>
                             <div class="mb-3">
@@ -554,7 +554,29 @@
 
         window.onload = function () {
             addProductRow();
+            loadShopInfo(); // ব্রাউজার স্টোরেজ থেকে প্রতিষ্ঠানের তথ্য লোড করবে
         };
+
+        // লোকাল স্টোরেজে প্রতিষ্ঠানের তথ্য সেভ করার ফাংশন
+        function saveShopInfo() {
+            const shopData = {
+                name: document.getElementById('shopName').value,
+                address: document.getElementById('shopAddress').value,
+                phone: document.getElementById('shopPhone').value
+            };
+            localStorage.setItem('pos_shop_info', JSON.stringify(shopData));
+        }
+
+        // লোকাল স্টোরেজ থেকে প্রতিষ্ঠানের তথ্য লোড করার ফাংশন
+        function loadShopInfo() {
+            const savedData = localStorage.getItem('pos_shop_info');
+            if (savedData) {
+                const shopData = JSON.parse(savedData);
+                document.getElementById('shopName').value = shopData.name || '';
+                document.getElementById('shopAddress').value = shopData.address || '';
+                document.getElementById('shopPhone').value = shopData.phone || '';
+            }
+        }
 
         function addProductRow() {
             rowCount++;
@@ -562,25 +584,25 @@
             const tr = document.createElement('tr');
             tr.id = `row-${rowCount}`;
             tr.innerHTML = `
-                        <td><input type="text" class="form-control form-control-sm prod-name" placeholder="প্রোডাক্ট নাম" required></td>
-                        <td><input type="number" class="form-control form-control-sm prod-weight" value="1" min="0" step="any" oninput="calculateRow(${rowCount})"></td>
-                        <td>
-                            <select class="form-select form-select-sm prod-unit" onchange="calculateRow(${rowCount})">
-                                <option value="Kg">Kg</option>
-                                <option value="Gram">Gram</option>
-                                <option value="Pcs">Pcs</option>
-                                <option value="Litre">Litre</option>
-                            </select>
-                        </td>
-                        <td><input type="number" class="form-control form-control-sm prod-qty" value="1" min="1" oninput="calculateRow(${rowCount})"></td>
-                        <td><input type="number" class="form-control form-control-sm prod-price" value="0" min="0" step="any" oninput="calculateRow(${rowCount})"></td>
-                        <td class="fw-bold text-end pe-3"><span class="row-total">0.00</span></td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeRow(${rowCount})">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
+                            <td><input type="text" class="form-control form-control-sm prod-name" placeholder="প্রোডাক্ট নাম" required></td>
+                            <td><input type="number" class="form-control form-control-sm prod-weight" value="1" min="0" step="any" oninput="calculateRow(${rowCount})"></td>
+                            <td>
+                                <select class="form-select form-select-sm prod-unit" onchange="calculateRow(${rowCount})">
+                                    <option value="Kg">Kg</option>
+                                    <option value="Gram">Gram</option>
+                                    <option value="Pcs">Pcs</option>
+                                    <option value="Litre">Litre</option>
+                                </select>
+                            </td>
+                            <td><input type="number" class="form-control form-control-sm prod-qty" value="1" min="1" oninput="calculateRow(${rowCount})"></td>
+                            <td><input type="number" class="form-control form-control-sm prod-price" value="0" min="0" step="any" oninput="calculateRow(${rowCount})"></td>
+                            <td class="fw-bold text-end pe-3"><span class="row-total">0.00</span></td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeRow(${rowCount})">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
             tbody.appendChild(tr);
         }
 
@@ -668,7 +690,10 @@
 
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = '';
-            new QRCode(qrContainer, {
+            
+            // Generate QR Code and convert it to Data URL for Mobile PDF compatibility
+            const tempQrDiv = document.createElement('div');
+            new QRCode(tempQrDiv, {
                 text: invNumberStr,
                 width: 100,
                 height: 100,
@@ -676,6 +701,24 @@
                 colorLight: "#ffffff",
                 correctLevel: QRCode.CorrectLevel.H
             });
+
+            setTimeout(() => {
+                const qrCanvas = tempQrDiv.querySelector('canvas');
+                const qrImgTag = tempQrDiv.querySelector('img');
+                let qrDataUrl = '';
+                
+                if (qrCanvas) {
+                    qrDataUrl = qrCanvas.toDataURL("image/png");
+                } else if (qrImgTag) {
+                    qrDataUrl = qrImgTag.src;
+                }
+
+                if (qrDataUrl) {
+                    qrContainer.innerHTML = `<img src="${qrDataUrl}" alt="QR Code" width="100" height="100" style="display:block; margin:0 auto;" />`;
+                } else {
+                    qrContainer.appendChild(tempQrDiv);
+                }
+            }, 100);
 
             // Reset paper size dropdown to A4 on every new generation
             document.getElementById('paperSize').value = 'a4';
@@ -724,12 +767,12 @@
 
             if (isThermal) {
                 invThead.innerHTML = `
-                            <tr>
-                                <th style="width: 50%;">বিবরণ</th>
-                                <th class="text-center" style="width: 20%;">Qty</th>
-                                <th class="text-end" style="width: 30%;">মোট</th>
-                            </tr>
-                        `;
+                                <tr>
+                                    <th style="width: 50%;">বিবরণ</th>
+                                    <th class="text-center" style="width: 20%;">Qty</th>
+                                    <th class="text-end" style="width: 30%;">মোট</th>
+                                </tr>
+                            `;
                 rows.forEach((row, idx) => {
                     const name = row.querySelector('.prod-name').value || "Item " + (idx + 1);
                     const weight = row.querySelector('.prod-weight').value;
@@ -739,26 +782,26 @@
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                                <td>
-                                    <div class="fw-bold">${name}</div>
-                                    <div class="text-muted" style="font-size: 0.8em;">${weight} ${unit}</div>
-                                </td>
-                                <td class="text-center fw-bold align-middle">${qty}</td>
-                                <td class="text-end fw-bold align-middle">${total.toFixed(2)}</td>
-                            `;
+                                    <td>
+                                        <div class="fw-bold">${name}</div>
+                                        <div class="text-muted" style="font-size: 0.8em;">${weight} ${unit}</div>
+                                    </td>
+                                    <td class="text-center fw-bold align-middle">${qty}</td>
+                                    <td class="text-end fw-bold align-middle">${total.toFixed(2)}</td>
+                                `;
                     invTbody.appendChild(tr);
                 });
             } else {
                 invThead.innerHTML = `
-                            <tr>
-                                <th style="width: 5%;">#</th>
-                                <th style="width: 40%;">বিবরণ</th>
-                                <th class="text-center" style="width: 20%;">পরিমাণ</th>
-                                <th class="text-center" style="width: 10%;">সংখ্যা</th>
-                                <th class="text-end" style="width: 12%;">দর</th>
-                                <th class="text-end" style="width: 13%;">মোট</th>
-                            </tr>
-                        `;
+                                <tr>
+                                    <th style="width: 5%;">#</th>
+                                    <th style="width: 40%;">বিবরণ</th>
+                                    <th class="text-center" style="width: 20%;">পরিমাণ</th>
+                                    <th class="text-center" style="width: 10%;">সংখ্যা</th>
+                                    <th class="text-end" style="width: 12%;">দর</th>
+                                    <th class="text-end" style="width: 13%;">মোট</th>
+                                </tr>
+                            `;
                 let index = 1;
                 rows.forEach(row => {
                     const name = row.querySelector('.prod-name').value || "Item " + index;
@@ -770,13 +813,13 @@
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                                <td>${index++}</td>
-                                <td><div class="fw-bold">${name}</div></td>
-                                <td class="text-center">${weight} ${unit}</td>
-                                <td class="text-center">${qty}</td>
-                                <td class="text-end">${price.toFixed(2)}</td>
-                                <td class="text-end fw-bold">${total.toFixed(2)}</td>
-                            `;
+                                    <td>${index++}</td>
+                                    <td><div class="fw-bold">${name}</div></td>
+                                    <td class="text-center">${weight} ${unit}</td>
+                                    <td class="text-center">${qty}</td>
+                                    <td class="text-end">${price.toFixed(2)}</td>
+                                    <td class="text-end fw-bold">${total.toFixed(2)}</td>
+                                `;
                     invTbody.appendChild(tr);
                 });
             }
@@ -791,7 +834,6 @@
 
         function downloadPDF() {
             const element = document.getElementById('invoiceBox');
-            const paperSize = document.getElementById('paperSize').value;
             const invNumber = document.getElementById('invNumber').innerText.replace('#', '');
             const clone = element.cloneNode(true);
 
